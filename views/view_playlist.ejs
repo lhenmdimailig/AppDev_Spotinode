@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= playlist.name %> - Songs</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <style>
+        .audio-player {
+            display: none; /* Initially hide the audio player */
+            margin-top: 10px;
+            text-align: center; /* Center the audio player */
+        }
+    </style>
+</head>
+<body class="bg-gradient">
+    <header class="header">
+        <div class="container">
+            <h1 class="logo">musicalhen</h1>
+            <nav class="nav">
+                <a href="/songs" class="nav-link">Songs</a>
+                <a href="/upload" class="nav-link">Upload Song</a>
+                <a href="/playlist" class="nav-link">Playlist</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <h2 class="section-title">Songs in <%= playlist.name %></h2>
+
+        <!-- Songs in Playlist -->
+        <!-- Songs in Playlist -->
+        <ul class="song-list">
+            <% songs.forEach(song => { %>
+                <li>
+                    <a href="#" class="song-link" data-file="<%= song.song_url %>">
+                        <%= song.title %> - <%= song.artist %>
+                    </a>
+                    <button class="delete-button" onclick="openModal('<%= song.id %>')">Delete</button>
+                </li>
+            <% }) %>
+        </ul>
+
+      <!-- Audio Player Container -->
+<div class="audio-player-container">
+    <div class="audio-player" id="audio-player">
+        <audio controls id="audio-element">
+            <source src="" type="audio/mpeg">
+            Your browser does not support the audio element.
+        </audio>
+    </div>
+</div>
+
+        <h3>Add Songs to Playlist</h3>
+        <form action="/playlist/<%= playlist.id %>/add-song" method="POST">
+            <select name="song_id">
+                <% allSongs.forEach(song => { %>
+                    <option value="<%= song.id %>"><%= song.title %> - <%= song.artist %></option>
+                <% }) %>
+            </select>
+            <button type="submit">Add to Playlist</button>
+        </form>
+    </main>
+<!-- Modal -->
+<div id="confirmationModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <p>Are you sure you want to delete this song?</p>
+        <form id="deleteForm" action="" method="POST">
+            <input type="hidden" name="song_id" id="songIdToDelete">
+            <button type="submit">Yes, Delete</button>
+            <button type="button" onclick="closeModal()">Cancel</button>
+        </form>
+    </div>
+</div>
+    <script>
+        // JavaScript to handle song click and play audio
+        const songLinks = document.querySelectorAll('.song-link');
+        const audioPlayer = document.getElementById('audio-player');
+        const audioElement = document.getElementById('audio-element');
+    
+        songLinks.forEach(link => {
+            link.addEventListener('click', function(event) {
+                event.preventDefault(); // Prevent the default link behavior
+                const filePath = this.getAttribute('data-file'); // Get the file path from data attribute
+    
+                // Set the audio source
+                audioElement.src = filePath;
+    
+                // Reset the audio player and play the audio
+                audioElement.load(); // Load the new source
+                audioElement.play().catch(error => {
+                    console.error('Error playing the audio:', error); // Log any errors
+                });
+    
+                // Show the audio player
+                audioPlayer.style.display = 'block';
+            });
+        });
+         // Function to open the modal
+         function openModal(songId) {
+            document.getElementById('confirmationModal').style.display = 'block';
+            document.getElementById('songIdToDelete').value = songId; // Set the song ID to delete
+            document.getElementById('deleteForm').action = `/playlist/<%= playlist.id %>/remove-song`; // Set the action for the form
+        }
+
+        // Function to close the modal
+        function closeModal() {
+            document.getElementById('confirmationModal').style.display = 'none';
+        }
+
+        // Close modal when clicking outside of it
+        window.onclick = function(event) {
+            const modal = document.getElementById('confirmationModal');
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+    </script>
+</body>
+</html>
